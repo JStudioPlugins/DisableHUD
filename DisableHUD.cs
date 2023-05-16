@@ -10,22 +10,23 @@ using System.Threading.Tasks;
 using Rocket.Core.Plugins;
 using Rocket.Core.Logging;
 using Rocket.Unturned.Player;
+using Rocket.API.Collections;
 
 namespace DisableHUD
 {
     public class DisableHUD : RocketPlugin<DisableHUDConfiguration>
     {
+        public static DisableHUD Instance { get; private set; }
         public static DisableHUDConfiguration Config { get; private set; }
-
         protected override void Load()
         {
-            U.Events.OnPlayerConnected += Events_OnPlayerConnected;
+            U.Events.OnPlayerConnected += HandlePlayerConnect;
+            Instance = this;
             Config = Configuration.Instance;
-
             Logger.Log("DisableHUD by JStudio is now loaded.");
         }
 
-        private void Events_OnPlayerConnected(UnturnedPlayer player)
+        private void HandlePlayerConnect(UnturnedPlayer player)
         {
             if (!Config.EnemyInteraction)
                 player.Player.disablePluginWidgetFlag(EPluginWidgetFlags.ShowInteractWithEnemy);
@@ -80,26 +81,21 @@ namespace DisableHUD
 
         protected override void Unload()
         {
-            U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
-
+            U.Events.OnPlayerConnected -= HandlePlayerConnect;
             Logger.Log("DisableHUD by JStudio is now loaded.");
         }
+
+        public override TranslationList DefaultTranslations => new()
+        {
+            { "InvalidSyntax", "Your specified syntax was invalid." },
+            { "Disable", "Disabled {0} HUD."},
+            { "Enable", "Enabled {0} HUD"}
+        };
     }
 
     public class DisableHUDConfiguration : IRocketPluginConfiguration
     {
-        public bool EnemyInteraction { get; set; }
-        public bool HealthBar { get; set; }
-        public bool FoodBar { get; set; }
-        public bool WaterBar { get; set; }
-        public bool VirusBar { get; set; }
-        public bool StaminaBar { get; set; }
-        public bool OxygenBar { get; set; }
-        public bool StatusIcons { get; set; }
-        public bool GunStatus { get; set; }
-        public bool VehicleStatus { get; set; }
-        public bool CenterDot { get; set; }
-        public bool ReputationChange { get; set; }
+        public bool EnemyInteraction, HealthBar, FoodBar, WaterBar, VirusBar, StaminaBar, OxygenBar, StatusIcons, GunStatus, VehicleStatus, CenterDot, ReputationChange;
 
         public void LoadDefaults()
         {
